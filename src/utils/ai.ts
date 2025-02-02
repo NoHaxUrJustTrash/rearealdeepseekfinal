@@ -8,7 +8,7 @@ const groq = new Groq({
 
 const processLatex = (text: string): string => {
   // First, escape any backslashes that aren't part of LaTeX expressions
-  text = text.replace(/\\\\/g, '\\'); // Ensure backslashes are not over-escaped
+  text = text.replace(/\\\\/g, '\\'); // Prevent over-escaping backslashes
   
   // Convert plain text math expressions to LaTeX
   text = text.replace(/∫(?:_([^_\s]+))?(?:\^([^\s]+))?/g, (_, lower, upper) => {
@@ -23,7 +23,7 @@ const processLatex = (text: string): string => {
   text = text.replace(/([^_])<sup>([^<]+)<\/sup>/g, '$1^$2');
   
   // Match both inline and display LaTeX with proper handling of nested delimiters
-  return text.replace(/\$\$((?:[^$]|\$(?!\$))*)\$\$|\$((?:[^$]|\$(?!\$))*)\$|\[((?:[^\]])*)\]/g, (match, display, inline, legacy) => {
+  return text.replace(/\$\$([^$]+)\$\$|\$([^$]+)\$|\[([^\]]+)\]/g, (match, display, inline, legacy) => {
     try {
       const latex = (display || inline || legacy || '').trim();
       
@@ -33,17 +33,11 @@ const processLatex = (text: string): string => {
       const html = katex.renderToString(latex, {
         throwOnError: false,
         displayMode: !!display || !!legacy,
-        strict: "ignore",  // Ensures KaTeX ignores unknown commands
+        strict: "ignore",  
         trust: true,
-        output: "html", // Ensures better HTML rendering
-        macros: {
-          "\\N": "\\mathbb{N}",
-          "\\Z": "\\mathbb{Z}",
-          "\\Q": "\\mathbb{Q}",
-          "\\R": "\\mathbb{R}",
-          "\\C": "\\mathbb{C}"
-        }
+        output: "html",
       });
+      
       
       
       if (display || legacy) {
