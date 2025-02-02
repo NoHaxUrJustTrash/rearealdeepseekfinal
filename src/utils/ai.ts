@@ -7,41 +7,53 @@ const groq = new Groq({
 });
 
 const processLatex = (text: string): string => {
-  text = text.replace(/\\\\/g, '\\'); // Fix escaping issues
-  text = text.replace(/(?<=\d)\s*\/\s*(?=\d)/g, '/'); // Fix fractions like 3 / 2
-  text = text.replace(/(?<=\$\$|\$|\\\(|\\\[|\\begin\{.*?\})(.*?),(.*?)(?=\$\$|\$|\\\)|\\\]|\\end\{.*?\})/g, '$1\\,$2'); // Fix misplaced commas
+  // Skip if the content is already KaTeX HTML
+  if (text.includes('class="katex"')) {
+    return text;
+  }
 
-  return text.replace(/\$\$([^$]+)\$\$|\$([^$]+)\$|\[([^\]]+)\]/g, (match, display, inline, legacy) => {
+  // Rest of your existing processLatex code...
+  const katexOptions: katex.KatexOptions = {
+    throwOnError: false,
+    strict: "ignore",
+    trust: true,
+    output: "html",
+    macros: {
+      "\\N": "\\mathbb{N}",
+      "\\Z": "\\mathbb{Z}",
+      "\\Q": "\\mathbb{Q}",
+      "\\R": "\\mathbb{R}",
+      "\\C": "\\mathbb{C}"
+    }
+  };
+
+  // Process display math
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, latex) => {
     try {
-      const latex = (display || inline || legacy || '').trim();
-      if (!latex) return match;
-
-      const html = katex.renderToString(latex, {
-        throwOnError: false,
-        displayMode: !!display || !!legacy,
-        strict: "ignore",
-        trust: true,
-        output: "html",
-        macros: {
-          "\\N": "\\mathbb{N}",
-          "\\Z": "\\mathbb{Z}",
-          "\\Q": "\\mathbb{Q}",
-          "\\R": "\\mathbb{R}",
-          "\\C": "\\mathbb{C}"
-        }
-      });
-
-      return display || legacy
-        ? `<div class="flex justify-center my-4 katex-display">${html}</div>`
-        : html;
+      const html = katex.renderToString(latex.trim(), katexOptions);
+      return `<div class="flex justify-center my-4">${html}</div>`;
     } catch (error) {
-      console.error('KaTeX Rendering Error:', error);
+      console.error('KaTeX Display Math Error:', error);
       return match;
     }
   });
+
+  // Process inline math
+  text = text.replace(/\$([^$]+?)\$/g, (match, latex) => {
+    try {
+      const html = katex.renderToString(latex.trim(), {
+        ...katexOptions,
+        displayMode: false
+      });
+      return `<span class="katex-inline">${html}</span>`;
+    } catch (error) {
+      console.error('KaTeX Inline Math Error:', error);
+      return match;
+    }
+  });
+
+  return text;
 };
-
-
 
 export const getAIResponse = async (messages: { role: string; content: string; }[]) => {
   try {
