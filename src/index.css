@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Light theme scrollbar */
+::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* KaTeX styles */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem 0;
+  margin: 1rem 0 !important;
+  font-size: 1.1em;
+}
+
+.katex {
+  text-rendering: auto;
+  font: normal 1.1em KaTeX_Main, Times New Roman, serif;
+}
+
+.katex .mfrac .frac-line {
+  border-color: currentColor;
+}
+
+.katex .sqrt .sqrt-line {
+  border-color: currentColor;
+}
+
+.katex .accent .accent-body {
+  position: relative;
+}
+
+.dark .katex-display,
+.dark .katex {
+  color: #e5e7eb;
+}
+
+.light .katex-display,
+.light .katex {
+  color: #1f2937;
+}
+
+/* Ensure proper sizing for integrals and big operators */
+.katex .delimsizing.size3,
+.katex .delimsizing.size4,
+.katex .bigop-symbol {
+  transform: scale(1.2);
+}
+
+/* Code block styles */
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.dark .prose pre {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+}
+
+.light .prose pre {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
+  border-radius: 0.25rem;
+  padding: 0.2em 0.4em;
+}
+
+.dark .prose code {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.light .prose code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  white-space: normal;
+}
