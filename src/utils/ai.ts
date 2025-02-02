@@ -59,10 +59,9 @@ export const getAIResponse = async (messages: { role: string; content: string; }
   try {
     const startThinking = Date.now();
     
-    // Append a system instruction to prevent LaTeX output
     messages.push({
       role: "system",
-      content: "Do not use LaTeX in any response, including math equations."
+      content: "Do not use LaTeX in any response, including math equations. Ensure that all mathematical expressions are written in plain text format without any LaTeX syntax."
     });
 
     const response = await groq.chat.completions.create({
