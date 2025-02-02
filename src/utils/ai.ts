@@ -7,13 +7,16 @@ const groq = new Groq({
 });
 
 const processLatex = (text: string): string => {
-  // Ensure LaTeX backslashes are properly preserved
-  text = text.replace(/\\\\/g, '\\'); // Prevent double escaping
+  // Ensure LaTeX backslashes are correctly formatted
+  text = text.replace(/\\\\/g, '\\'); // Prevent over-escaping
 
-  // Fix potential issues with misplaced commas inside LaTeX expressions
+  // Fix missing proper fraction handling (extra spaces causing incorrect parsing)
+  text = text.replace(/(?<=\d)\s*\/\s*(?=\d)/g, '/');
+
+  // Fix misplaced commas inside LaTeX expressions (KaTeX needs \, for spacing)
   text = text.replace(/(?<=\$\$|\$|\\\(|\\\[|\\begin\{.*?\})(.*?),(.*?)(?=\$\$|\$|\\\)|\\\]|\\end\{.*?\})/g, '$1\\,$2');
 
-  // Convert inline and block LaTeX using KaTeX
+  // Fix inline math expressions with proper KaTeX rendering
   return text.replace(/\$\$([^$]+)\$\$|\$([^$]+)\$|\[([^\]]+)\]/g, (match, display, inline, legacy) => {
     try {
       const latex = (display || inline || legacy || '').trim();
@@ -43,6 +46,7 @@ const processLatex = (text: string): string => {
     }
   });
 };
+
 
 
 export const getAIResponse = async (messages: { role: string; content: string; }[]) => {
