@@ -8,7 +8,7 @@ const groq = new Groq({
 
 const processLatex = (text: string): string => {
   // First, escape any backslashes that aren't part of LaTeX expressions
-  text = text.replace(/\\(?![\(\)\[\]\$]|[a-zA-Z]+[\{\s])/g, '\\\\');
+  text = text.replace(/\\\\/g, '\\'); // Ensure backslashes are not over-escaped
   
   // Convert plain text math expressions to LaTeX
   text = text.replace(/∫(?:_([^_\s]+))?(?:\^([^\s]+))?/g, (_, lower, upper) => {
@@ -33,8 +33,9 @@ const processLatex = (text: string): string => {
       const html = katex.renderToString(latex, {
         throwOnError: false,
         displayMode: !!display || !!legacy,
-        strict: false,
+        strict: "ignore",  // Ensures KaTeX ignores unknown commands
         trust: true,
+        output: "html", // Ensures better HTML rendering
         macros: {
           "\\N": "\\mathbb{N}",
           "\\Z": "\\mathbb{Z}",
@@ -43,6 +44,7 @@ const processLatex = (text: string): string => {
           "\\C": "\\mathbb{C}"
         }
       });
+      
       
       if (display || legacy) {
         return `<div class="flex justify-center my-4 katex-display">${html}</div>`;
