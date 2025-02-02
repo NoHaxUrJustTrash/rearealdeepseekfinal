@@ -59,9 +59,9 @@ export const getAIResponse = async (messages: { role: string; content: string; }
   try {
     const startThinking = Date.now();
     
-    messages.push({
+    messages.unshift({
       role: "system",
-      content: "Do not use LaTeX in any response, including math equations. Ensure that all mathematical expressions are written in plain text format without any LaTeX syntax."
+      content: "Do not use LaTeX or any other mathematical typesetting in responses. Use plain text or HTML for mathematical expressions, such as square roots (√), fractions (a/b), powers (x^n), and integrals (∫). Ensure all mathematical expressions are clear and readable without LaTeX syntax."
     });
 
     const response = await groq.chat.completions.create({
