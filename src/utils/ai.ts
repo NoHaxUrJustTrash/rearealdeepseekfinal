@@ -7,16 +7,10 @@ const groq = new Groq({
 });
 
 const processLatex = (text: string): string => {
-  // Ensure LaTeX backslashes are correctly formatted
-  text = text.replace(/\\\\/g, '\\'); // Prevent over-escaping
+  text = text.replace(/\\\\/g, '\\'); // Fix escaping issues
+  text = text.replace(/(?<=\d)\s*\/\s*(?=\d)/g, '/'); // Fix fractions like 3 / 2
+  text = text.replace(/(?<=\$\$|\$|\\\(|\\\[|\\begin\{.*?\})(.*?),(.*?)(?=\$\$|\$|\\\)|\\\]|\\end\{.*?\})/g, '$1\\,$2'); // Fix misplaced commas
 
-  // Fix missing proper fraction handling (extra spaces causing incorrect parsing)
-  text = text.replace(/(?<=\d)\s*\/\s*(?=\d)/g, '/');
-
-  // Fix misplaced commas inside LaTeX expressions (KaTeX needs \, for spacing)
-  text = text.replace(/(?<=\$\$|\$|\\\(|\\\[|\\begin\{.*?\})(.*?),(.*?)(?=\$\$|\$|\\\)|\\\]|\\end\{.*?\})/g, '$1\\,$2');
-
-  // Fix inline math expressions with proper KaTeX rendering
   return text.replace(/\$\$([^$]+)\$\$|\$([^$]+)\$|\[([^\]]+)\]/g, (match, display, inline, legacy) => {
     try {
       const latex = (display || inline || legacy || '').trim();
