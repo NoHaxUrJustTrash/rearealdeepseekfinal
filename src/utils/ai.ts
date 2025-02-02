@@ -58,11 +58,17 @@ const processLatex = (text: string): string => {
 export const getAIResponse = async (messages: { role: string; content: string; }[]) => {
   try {
     const startThinking = Date.now();
+    
+    // Append a system instruction to prevent LaTeX output
+    messages.push({
+      role: "system",
+      content: "Do not use LaTeX in any response, including math equations."
+    });
+
     const response = await groq.chat.completions.create({
       messages,
       model: "deepseek-r1-distill-llama-70b",
       temperature: 0.7,
-      max_tokens: 1000,
     });
 
     const content = response.choices[0]?.message?.content || '';
