@@ -7,50 +7,43 @@ const groq = new Groq({
 });
 
 const processLatex = (text: string): string => {
-  // First, escape any backslashes that aren't part of LaTeX expressions
-  text = text.replace(/\\\\/g, '\\'); // Prevent over-escaping backslashes
-  
-  // Convert plain text math expressions to LaTeX
-  text = text.replace(/∫(?:_([^_\s]+))?(?:\^([^\s]+))?/g, (_, lower, upper) => {
-    let latex = '\\int';
-    if (lower) latex += `_{${lower}}`;
-    if (upper) latex += `^{${upper}}`;
-    return `$${latex}$`;
-  });
-  
-  // Convert subscripts and superscripts
-  text = text.replace(/([^_])<sub>([^<]+)<\/sub>/g, '$1_$2');
-  text = text.replace(/([^_])<sup>([^<]+)<\/sup>/g, '$1^$2');
-  
-  // Match both inline and display LaTeX with proper handling of nested delimiters
+  // Ensure LaTeX backslashes are properly preserved
+  text = text.replace(/\\\\/g, '\\'); // Prevent double escaping
+
+  // Fix potential issues with misplaced commas inside LaTeX expressions
+  text = text.replace(/(?<=\$\$|\$|\\\(|\\\[|\\begin\{.*?\})(.*?),(.*?)(?=\$\$|\$|\\\)|\\\]|\\end\{.*?\})/g, '$1\\,$2');
+
+  // Convert inline and block LaTeX using KaTeX
   return text.replace(/\$\$([^$]+)\$\$|\$([^$]+)\$|\[([^\]]+)\]/g, (match, display, inline, legacy) => {
     try {
       const latex = (display || inline || legacy || '').trim();
-      
-      // Skip empty expressions
       if (!latex) return match;
-      
+
       const html = katex.renderToString(latex, {
         throwOnError: false,
         displayMode: !!display || !!legacy,
-        strict: "ignore",  
+        strict: "ignore",
         trust: true,
         output: "html",
+        macros: {
+          "\\N": "\\mathbb{N}",
+          "\\Z": "\\mathbb{Z}",
+          "\\Q": "\\mathbb{Q}",
+          "\\R": "\\mathbb{R}",
+          "\\C": "\\mathbb{C}"
+        }
       });
-      
-      
-      
-      if (display || legacy) {
-        return `<div class="flex justify-center my-4 katex-display">${html}</div>`;
-      }
-      return html;
+
+      return display || legacy
+        ? `<div class="flex justify-center my-4 katex-display">${html}</div>`
+        : html;
     } catch (error) {
-      console.error('LaTeX rendering error:', error);
-      // Return the original expression if rendering fails
+      console.error('KaTeX Rendering Error:', error);
       return match;
     }
   });
 };
+
 
 export const getAIResponse = async (messages: { role: string; content: string; }[]) => {
   try {
